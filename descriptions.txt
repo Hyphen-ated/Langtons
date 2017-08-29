@@ -1,0 +1,50 @@
+Langton's ant 4 state variants. See langton4state.cpp
+
+0000: flashy vertical line
+0001: 1px blue cross with 1D chaos
+0002: 1px flashing line with downward pattern. gets interesting when pattern loops around
+0003: 1px blue cross with 1D chaos
+00{1-3}0, 0{1-3}00, {1-3}000: analogous to the above
+
+0011:widening green cross w/ red borders and central chaos
+
+1112: heavily overwriting thin cross
+*1113: mini-highway with easy crossing
+1121: very slow cross
+1131: delayed langton
+1132: erratic cross
+1133: symmetric brain
+1211: slow expanding cross. lots of overwriting.
+1231: row+column highways
+*1223: appears repeating at first. very small, very slow grower. like a counter.
+1232: slow langton
+1230: unremarkable chaos
+1233: rainbow cross. 
+1311: quasi-boxy chaos with lumps
+1320: small cross and then repeating vertical fill.
+1321: unremarkable chaos
+1322: tiny repeater
+1330: quasi-boxy-border chaos
+1331: expanding symmetric quasi-boxy structure
+1332: unremarkable chaos
+1333: quasi-boxy-border chaos
+2001: circular chaos
+2011: circular chaos
+*2013: tiny cross then horizontal fill. awesome fill-pattern chaos later.
+2103: monocolor cross w/chaos and then repeating whole-screen fill!
+2112: thin cross and then repeated self-erasing climber
+2113: wimpy chaos
+2131: wimpy chaos
+2211: skinny cross
+2333: expanding nonchaotic regular X box
+3001: unremarkable chaos
+3011: lumpy chaos
+3020: blotch chaos
+3113: expanding symmetric quasi-boxy structure
+3133: quasi-boxy chaos
+*3200: 30 degree highways!!!!! AND 60 DEGREE ONES!!!! 8 HIGHWAY DIRECTIONS!
+*3213: row+column highways!!
+3223: slow chaos
+3313: delayed langton
+
+
