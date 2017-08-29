@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Langton's Ant Colony</title>
+</head>
+
+<body onload="init()">
+
+<h1>Langton's Ant Colony</h1>
+
+<canvas id="colony" width="640" height="480">
+You need a browser with support for the canvas element to see this thing, and you aren't using one
+</canvas>
+
+
+<p> Enter an up-to-20-digit number in base 4 to define an ant. You can have more than one. </p>
+<p> <input type="text" name="antnum" id="antnum" value="1313" /> </p>
+<p> <input type="button" value="Create Ant" onclick="newAnt()"/>
+    <input type="button" value="Clear All" onclick="clearAll()"/>
+    <input type="button" value="Pause" id="pause" onclick="togglePause()"/>
+</p>
+
+<p>
+<input type="button" value="Set Background:" onclick="clearCanvas()"/>
+<select id="bgtype" onchange="bgselect(this.options[this.selectedIndex].value)">
+   <option value="solid">Solid Color</option>
+   <option value="checkers">Checkerboard</option>
+   <option value="vertstripe">Vertical stripes</option>
+</select>
+Color1:
+<select id="color1"></select>
+Color2:
+<select id="color2"></select>
+</p>
+
+<p> <a href="descriptions.txt">Some ant descriptions</a>
+
+<script type="text/javascript">
+var timer;
+
+var w = 640;
+var h = 480;
+
+var paused = false;
+
+var colony = document.getElementById('colony');
+var ctx = colony.getContext('2d');
+
+var bg = new Array(w);
+for(i = 0; i < bg.length; ++i) bg[i] = new Array(h);
+
+var ants = [];
+var colors = ['Black', 'Red', 'Green', 'Blue', 'Darkmagenta', 'White', 'Darkorange', 'Cornflowerblue', 'Cyan', 'Darkseagreen', 'Firebrick', 'Mediumorchid', 'Yellow', 'Sienna', 'Pink', 'Navy', 'Peru', 'Crimson', 'Aqua', 'Gainsboro' ];
+
+
+function Ant(x, y, rules) {
+   this.x = x;
+   this.y = y;
+   this.rules = rules;
+   this.dir = 0;
+   this.antAdvance = antAdvance;
+   //dir: 0=up, 1=right, 2=down, 3=left
+}
+
+function antAdvance() {
+   //first move...
+   switch(this.dir) {
+		case 0:
+			--this.y; break;
+		case 1:
+			--this.x; break;
+		case 2:
+			++this.y; break;
+		case 3:
+			++this.x; break;
+	}
+	this.y = (this.y + h) % h;
+	this.x = (this.x + w) % w;
+
+	//...then turn...
+	var foundIndex = -1;
+	var foundColor = bg[this.x][this.y];
+
+	foundColor %= this.rules.length; //if we see some weird alien color, treat it as one of our colors
+
+	this.dir += this.rules[foundColor];
+
+   this.dir = this.dir % 4;
+
+   //...then change color of the square I landed on...
+   var newColor = (foundColor + 1) % this.rules.length;
+   bg[this.x][this.y] = newColor;
+   ctx.fillStyle = colors[newColor];
+   ctx.fillRect(this.x,this.y,1,1);
+
+}
+
+function update() {
+   for(var step = 0; step < 100; ++step) {
+      for(var i = 0; i < ants.length; ++i) {
+        if(!paused)
+           ants[i].antAdvance();
+      }
+   }
+   timer = setTimeout("update()", 0);
+}
+
+
+function clearCanvas() {
+   var bgtype = document.getElementById("bgtype");
+   var chosenbg = bgtype.options[bgtype.selectedIndex].value;
+   var box1 = document.getElementById("color1");
+   var box2 = document.getElementById("color2");
+   var color1, color2;
+   if(box1.options.length > 0)
+      color1 = box1.options[box1.selectedIndex].value;
+   else
+      color1 = 0;
+
+   if(box2.options.length > 0)
+      color2 = box2.options[box2.selectedIndex].value;
+   else
+      color2 = 0;
+
+   color1 = +(color1);
+   color2 = +(color2);
+   var color;
+   switch(chosenbg) {
+     case "solid":
+       ctx.fillStyle = colors[color1];
+       ctx.fillRect(0,0,640,480);
+
+       for(var x = 0; x < w; ++x) {
+          for(var y = 0; y < h; ++y) {
+             bg[x][y] = color1;
+          }
+       }
+       break;
+  
+     case "checkers":
+
+        for(var x = 0; x < w; ++x) {
+           for(var y = 0; y < h; ++y) {
+              if((x+y) % 2 == 0) {
+                 color = color1;
+              } else {
+                 color = color2;
+              }
+              bg[x][y] = color;
+              ctx.fillStyle = colors[color];
+              ctx.fillRect(x,y,1,1);
+           }
+        }
+  
+        break;
+     case "vertstripe":
+       for(var x = 0; x < w; ++x) {
+           if(x % 2 == 0) {
+                 color = color1;
+              } else {
+                 color = color2;
+              }
+           ctx.fillStyle = colors[color];
+           ctx.fillRect(x,0,1,h);
+           
+           for(var y = 0; y < h; ++y) {
+              bg[x][y] = color;
+           }
+        }
+       break;
+     default:
+        break;
+   }
+}
+
+function clearAll() {
+  clearCanvas();
+  ants = [];
+}
+
+function newAnt() {
+   var newRules = document.getElementById("antnum").value;
+   var rules = [];
+   if(newRules.length < colors.length) {
+      for(var i = 0; i < newRules.length; ++i) {
+         var rule = +(newRules[i]);
+         if (rule > 3) rule = 0;
+         rules.push(rule);
+      }
+      var anAnt = new Ant(320,240,rules);
+      ants.push(anAnt);
+   }
+}
+
+function init() {
+   var box1 = document.getElementById("color1");
+   box1.selectedIndex = 0;
+   setNumberList(box1);
+
+   clearCanvas();
+   update();
+}
+
+function togglePause() {
+   var pausebutton = document.getElementById("pause");
+   if(paused) {
+     pausebutton.value = "Pause";
+     paused = false;
+   } else {
+     pausebutton.value = "Resume";
+     paused = true;
+   }
+}
+
+var twoWasLastActive = false;
+function bgselect(bgtype) {
+   var box2 = document.getElementById("color2");
+
+   switch (bgtype) {
+      case "solid":
+         box2.options.length = 0;
+         twoWasLastActive = false;
+         break;
+      case "checkers":
+      case "vertstripe":
+         if(!twoWasLastActive)
+            setNumberList(box2);
+         twoWasLastActive = true;
+   }
+}
+
+function setNumberList(box) {
+   for(var i = 0; i < 20; ++i) {
+      box.options[i] = new Option(i,i);
+   }
+}
+
+</script>
+
+</body>
+
+</html>
